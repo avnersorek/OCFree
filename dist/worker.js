@@ -105,7 +105,7 @@ async function main() {
 }
 main().catch(async (error) => {
     const message = error instanceof Error ? error.message : String(error);
-    process.stderr.write(`opencode-free worker error: ${message}\n`);
+    process.stderr.write(`ocfree worker error: ${message}\n`);
     const jobId = process.argv[2];
     const dataDir = process.env.OCFREE_DATA_DIR;
     if (jobId && dataDir) {
@@ -119,6 +119,6 @@ main().catch(async (error) => {
     process.exitCode = 1;
 });
 process.on("unhandledRejection", (reason) => {
-    process.stderr.write(`opencode-free worker unhandled rejection: ${String(reason)}\n`);
+    process.stderr.write(`ocfree worker unhandled rejection: ${String(reason)}\n`);
     process.exitCode = 1;
 });

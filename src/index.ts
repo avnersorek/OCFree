@@ -37,7 +37,7 @@ const ConfigSchema = Type.Object({
   dataDir: Type.Optional(
     Type.String({
       description:
-        "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/opencode-free.",
+        "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/ocfree.",
     }),
   ),
   defaultTimeoutSec: Type.Optional(
@@ -140,8 +140,8 @@ function passMatrix(benchmark: BenchmarkRecord): {
 }
 
 export default defineToolPlugin({
-  id: "opencode-free",
-  name: "OpenCode Free",
+  id: "ocfree",
+  name: "OCFree",
   description:
     "Benchmark free OpenCode models and run repo development tasks with fallback.",
   configSchema: ConfigSchema,

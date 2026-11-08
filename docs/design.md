@@ -22,7 +22,7 @@ execution must shell out to that binary.
 `configSchema` in `src/index.ts`:
 
 - `opencodeBin?: string` — default `~/.opencode/bin/opencode`
-- `dataDir?: string` — default `~/.openclaw/state/opencode-free`
+- `dataDir?: string` — default `~/.openclaw/state/ocfree`
 - `defaultTimeoutSec?: number` — default 300, clamped 30..1800
 - `maxFallbackModels?: number` — default 3, clamped 1..5
 

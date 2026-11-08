@@ -1,4 +1,4 @@
-import type { DevTask, ModelId, OpenCodeFreeConfig, ResolvedConfig } from "./types.js";
+import type { DevTask, ModelId, OCFreeConfig, ResolvedConfig } from "./types.js";
 export interface AddTaskInput {
     title: string;
     repo: string;
@@ -10,20 +10,20 @@ export interface AddTaskInput {
  * one of the configured roots. This rejects symlink escapes and keeps `--auto`
  * runs away from arbitrary parts of the filesystem.
  */
-export declare function assertAllowedRepo(repoInput: string, config?: OpenCodeFreeConfig | ResolvedConfig): Promise<string>;
-export declare function addTask(dataDir: string, input: AddTaskInput, config?: OpenCodeFreeConfig | ResolvedConfig): Promise<DevTask>;
+export declare function assertAllowedRepo(repoInput: string, config?: OCFreeConfig | ResolvedConfig): Promise<string>;
+export declare function addTask(dataDir: string, input: AddTaskInput, config?: OCFreeConfig | ResolvedConfig): Promise<DevTask>;
 export declare function listTasks(dataDir: string): Promise<DevTask[]>;
 export declare function getTask(dataDir: string, id: string): Promise<DevTask | null>;
 export interface PickModelChainOptions {
     dataDir: string;
     explicitModels?: string[];
     maxModels?: number;
-    config?: OpenCodeFreeConfig | ResolvedConfig;
+    config?: OCFreeConfig | ResolvedConfig;
 }
 export declare function pickModelChain(options: PickModelChainOptions): Promise<ModelId[]>;
 export interface RunDevTaskOptions {
     dataDir: string;
-    config: OpenCodeFreeConfig | ResolvedConfig;
+    config: OCFreeConfig | ResolvedConfig;
     task: DevTask;
     models?: string[];
     resume?: boolean;

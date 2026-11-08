@@ -1,8 +1,8 @@
-import type { ModelId, ModelInfo, OpenCodeFreeConfig, ResolvedConfig } from "./types.js";
+import type { ModelId, ModelInfo, OCFreeConfig, ResolvedConfig } from "./types.js";
 export declare function normalizeModel(id: string): ModelId;
 export declare function isFreeModel(id: string): boolean;
-export declare function resolveBin(config: OpenCodeFreeConfig | ResolvedConfig): Promise<string>;
-export declare function listFreeModels(config: OpenCodeFreeConfig | ResolvedConfig): Promise<ModelInfo[]>;
+export declare function resolveBin(config: OCFreeConfig | ResolvedConfig): Promise<string>;
+export declare function listFreeModels(config: OCFreeConfig | ResolvedConfig): Promise<ModelInfo[]>;
 export interface RunOpencodeOptions {
     bin: string;
     dir: string;

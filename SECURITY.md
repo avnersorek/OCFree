@@ -27,6 +27,6 @@ To reduce risk:
 Please report security issues privately through GitHub private vulnerability
 reporting instead of opening a public issue:
 
-<https://github.com/AvnerSorek/opencode-free/security/advisories/new>
+<https://github.com/avnersorek/OCFree/security/advisories/new>
 
 Repository owner: Avner Sorek.

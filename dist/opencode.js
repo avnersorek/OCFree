@@ -110,7 +110,7 @@ function parseModelLines(stdout, discoveredAt) {
 }
 export async function listFreeModels(config) {
     const bin = await resolveBin(config);
-    const dataDir = expandHome(config.dataDir ?? "~/.openclaw/state/opencode-free");
+    const dataDir = expandHome(config.dataDir ?? "~/.openclaw/state/ocfree");
     const result = await captureProcess(bin, ["models", "opencode"], {
         env: { ...process.env, NO_COLOR: "1" },
         timeoutMs: 60_000,

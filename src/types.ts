@@ -112,7 +112,7 @@ export interface Job {
   error?: string;
 }
 
-export interface OpenCodeFreeConfig {
+export interface OCFreeConfig {
   opencodeBin?: string;
   dataDir?: string;
   defaultTimeoutSec?: number;

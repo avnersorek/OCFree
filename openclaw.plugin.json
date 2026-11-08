@@ -1,6 +1,6 @@
 {
-  "id": "opencode-free",
-  "name": "OpenCode Free",
+  "id": "ocfree",
+  "name": "OCFree",
   "description": "Benchmark free OpenCode models and run repo development tasks with fallback.",
   "version": "0.1.0",
   "configSchema": {
@@ -12,7 +12,7 @@
       },
       "dataDir": {
         "type": "string",
-        "description": "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/opencode-free."
+        "description": "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/ocfree."
       },
       "defaultTimeoutSec": {
         "type": "number",

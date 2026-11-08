@@ -10,7 +10,7 @@ import {
 import type {
   ModelId,
   ModelInfo,
-  OpenCodeFreeConfig,
+  OCFreeConfig,
   ResolvedConfig,
 } from "./types.js";
 
@@ -31,7 +31,7 @@ export function isFreeModel(id: string): boolean {
 }
 
 export async function resolveBin(
-  config: OpenCodeFreeConfig | ResolvedConfig,
+  config: OCFreeConfig | ResolvedConfig,
 ): Promise<string> {
   const bin = expandHome(
     config.opencodeBin ?? "~/.opencode/bin/opencode",
@@ -139,11 +139,11 @@ function parseModelLines(stdout: string, discoveredAt: string): ModelInfo[] {
 }
 
 export async function listFreeModels(
-  config: OpenCodeFreeConfig | ResolvedConfig,
+  config: OCFreeConfig | ResolvedConfig,
 ): Promise<ModelInfo[]> {
   const bin = await resolveBin(config);
   const dataDir = expandHome(
-    config.dataDir ?? "~/.openclaw/state/opencode-free",
+    config.dataDir ?? "~/.openclaw/state/ocfree",
   );
   const result = await captureProcess(bin, ["models", "opencode"], {
     env: { ...process.env, NO_COLOR: "1" },

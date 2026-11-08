@@ -1,14 +1,14 @@
 import { runBenchmark } from "./bench.js";
 import { getTask, runDevTask } from "./tasks.js";
 import { getJob, resolveConfig, updateJob } from "./store.js";
-import type { OpenCodeFreeConfig } from "./types.js";
+import type { OCFreeConfig } from "./types.js";
 
-function parseConfig(raw: string | undefined): OpenCodeFreeConfig {
+function parseConfig(raw: string | undefined): OCFreeConfig {
   if (!raw) return {};
   try {
     const parsed: unknown = JSON.parse(raw);
     if (parsed && typeof parsed === "object") {
-      return parsed as OpenCodeFreeConfig;
+      return parsed as OCFreeConfig;
     }
   } catch {
     return {};
@@ -52,7 +52,7 @@ async function main(): Promise<void> {
     const taskIds = stringArray(job.params.taskIds);
     const runsPerTask = numberOrUndefined(job.params.runsPerTask);
     const timeoutSec = numberOrUndefined(job.params.timeoutSec);
-    const benchConfig: OpenCodeFreeConfig = {
+    const benchConfig: OCFreeConfig = {
       ...config,
       ...(timeoutSec !== undefined ? { defaultTimeoutSec: timeoutSec } : {}),
     };
@@ -120,7 +120,7 @@ async function main(): Promise<void> {
 
 main().catch(async (error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
-  process.stderr.write(`opencode-free worker error: ${message}\n`);
+  process.stderr.write(`ocfree worker error: ${message}\n`);
   const jobId = process.argv[2];
   const dataDir = process.env.OCFREE_DATA_DIR;
   if (jobId && dataDir) {
@@ -135,7 +135,7 @@ main().catch(async (error: unknown) => {
 
 process.on("unhandledRejection", (reason) => {
   process.stderr.write(
-    `opencode-free worker unhandled rejection: ${String(reason)}\n`,
+    `ocfree worker unhandled rejection: ${String(reason)}\n`,
   );
   process.exitCode = 1;
 });

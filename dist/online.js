@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { writeJsonAtomic } from "./store.js";
 const BENCHLM_URL = "https://benchlm.ai/coding";
 const BIG_PICKLE_URL = "https://github.com/PhillipChaffee/big-pickle-swe-atlas";
-const USER_AGENT = "opencode-free/0.1 (+https://github.com/AvnerSorek/opencode-free)";
+const USER_AGENT = "ocfree/0.1 (+https://github.com/avnersorek/OCFree)";
 /**
  * Seeded from public online results. BenchLM weighted coding scores are on a
  * 0..100 scale; Big Pickle's value is a SWE Atlas Codebase QnA resolve-rate on

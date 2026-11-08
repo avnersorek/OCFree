@@ -22,7 +22,7 @@ const BENCHLM_URL = "https://benchlm.ai/coding";
 const BIG_PICKLE_URL =
   "https://github.com/PhillipChaffee/big-pickle-swe-atlas";
 const USER_AGENT =
-  "opencode-free/0.1 (+https://github.com/AvnerSorek/opencode-free)";
+  "ocfree/0.1 (+https://github.com/avnersorek/OCFree)";
 
 /**
  * Seeded from public online results. BenchLM weighted coding scores are on a

@@ -1,4 +1,4 @@
-import type { BenchRun, BenchmarkRecord, ModelId, ModelRating, OpenCodeFreeConfig, ProbeResult, ResolvedConfig, TaskRunResult } from "./types.js";
+import type { BenchRun, BenchmarkRecord, ModelId, ModelRating, OCFreeConfig, ProbeResult, ResolvedConfig, TaskRunResult } from "./types.js";
 export interface BenchTask {
     id: string;
     title: string;
@@ -25,7 +25,7 @@ export interface ProbeOptions {
 export declare function probeModel(options: ProbeOptions): Promise<ProbeResult>;
 export interface RunBenchmarkOptions {
     dataDir: string;
-    config: OpenCodeFreeConfig | ResolvedConfig;
+    config: OCFreeConfig | ResolvedConfig;
     models?: string[];
     taskIds?: string[];
     runsPerTask?: number;

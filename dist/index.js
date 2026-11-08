@@ -11,7 +11,7 @@ const ConfigSchema = Type.Object({
         description: "Path to the local OpenCode harness binary. Defaults to ~/.opencode/bin/opencode.",
     })),
     dataDir: Type.Optional(Type.String({
-        description: "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/opencode-free.",
+        description: "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/ocfree.",
     })),
     defaultTimeoutSec: Type.Optional(Type.Number({
         description: "Default per-run timeout in seconds (clamped 30..1800). Defaults to 300.",
@@ -85,8 +85,8 @@ function passMatrix(benchmark) {
     });
 }
 export default defineToolPlugin({
-    id: "opencode-free",
-    name: "OpenCode Free",
+    id: "ocfree",
+    name: "OCFree",
     description: "Benchmark free OpenCode models and run repo development tasks with fallback.",
     configSchema: ConfigSchema,
     tools: (tool) => [

@@ -1,9 +1,9 @@
-import type { DevTask, Job, ModelInfo, OpenCodeFreeConfig, ResolvedConfig } from "./types.js";
+import type { DevTask, Job, ModelInfo, OCFreeConfig, ResolvedConfig } from "./types.js";
 export declare function expandHome(value: string): string;
 export declare function clamp(value: number, min: number, max: number): number;
-export declare function resolveConfig(config: OpenCodeFreeConfig): ResolvedConfig;
+export declare function resolveConfig(config: OCFreeConfig): ResolvedConfig;
 export declare function randomId(prefix: string): string;
-export declare function ensureDataDir(config: OpenCodeFreeConfig | ResolvedConfig): Promise<string>;
+export declare function ensureDataDir(config: OCFreeConfig | ResolvedConfig): Promise<string>;
 export declare function readJson<T>(path: string, fallback: T): Promise<T>;
 export declare function writeJsonAtomic(path: string, value: unknown): Promise<void>;
 export declare function readModels(dataDir: string): Promise<ModelInfo[]>;
@@ -14,4 +14,4 @@ export declare function createJob(dataDir: string, type: Job["type"], params: Re
 export declare function getJob(dataDir: string, id: string): Promise<Job | null>;
 export declare function updateJob(dataDir: string, id: string, patch: Partial<Omit<Job, "id" | "type" | "createdAt">>): Promise<Job | null>;
 export declare function listJobs(dataDir: string, limit?: number): Promise<Job[]>;
-export declare function spawnWorker(jobId: string, dataDir: string, config: OpenCodeFreeConfig | ResolvedConfig): number | undefined;
+export declare function spawnWorker(jobId: string, dataDir: string, config: OCFreeConfig | ResolvedConfig): number | undefined;

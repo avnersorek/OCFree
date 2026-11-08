@@ -22,7 +22,7 @@ import type {
   BenchmarkRecord,
   ModelId,
   ModelRating,
-  OpenCodeFreeConfig,
+  OCFreeConfig,
   ProbeResult,
   ResolvedConfig,
   TaskRunResult,
@@ -663,7 +663,7 @@ export async function probeModel(options: ProbeOptions): Promise<ProbeResult> {
 
 export interface RunBenchmarkOptions {
   dataDir: string;
-  config: OpenCodeFreeConfig | ResolvedConfig;
+  config: OCFreeConfig | ResolvedConfig;
   models?: string[];
   taskIds?: string[];
   runsPerTask?: number;

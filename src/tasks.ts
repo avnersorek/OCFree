@@ -30,7 +30,7 @@ import type { RunOpencodeResult } from "./opencode.js";
 import type {
   DevTask,
   ModelId,
-  OpenCodeFreeConfig,
+  OCFreeConfig,
   ResolvedConfig,
 } from "./types.js";
 
@@ -60,7 +60,7 @@ async function realpathOrResolved(value: string): Promise<string> {
  */
 export async function assertAllowedRepo(
   repoInput: string,
-  config?: OpenCodeFreeConfig | ResolvedConfig,
+  config?: OCFreeConfig | ResolvedConfig,
 ): Promise<string> {
   const candidate = resolvePath(expandHome(repoInput));
   const root = parsePath(candidate).root;
@@ -144,7 +144,7 @@ function expandHome(value: string): string {
 export async function addTask(
   dataDir: string,
   input: AddTaskInput,
-  config?: OpenCodeFreeConfig | ResolvedConfig,
+  config?: OCFreeConfig | ResolvedConfig,
 ): Promise<DevTask> {
   if (!input.title.trim()) throw new Error("Task title must not be empty");
   if (!input.prompt.trim()) throw new Error("Task prompt must not be empty");
@@ -199,7 +199,7 @@ export interface PickModelChainOptions {
   dataDir: string;
   explicitModels?: string[];
   maxModels?: number;
-  config?: OpenCodeFreeConfig | ResolvedConfig;
+  config?: OCFreeConfig | ResolvedConfig;
 }
 
 export async function pickModelChain(
@@ -340,7 +340,7 @@ async function gitStatus(repo: string): Promise<Set<string>> {
 
 export interface RunDevTaskOptions {
   dataDir: string;
-  config: OpenCodeFreeConfig | ResolvedConfig;
+  config: OCFreeConfig | ResolvedConfig;
   task: DevTask;
   models?: string[];
   resume?: boolean;

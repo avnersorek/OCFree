@@ -1,5 +1,5 @@
 {
-  "name": "openclaw-plugin-opencode-free",
+  "name": "ocfree",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -8,11 +8,11 @@
   "author": "Avner Sorek",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AvnerSorek/opencode-free.git"
+    "url": "https://github.com/avnersorek/OCFree.git"
   },
-  "homepage": "https://github.com/AvnerSorek/opencode-free",
+  "homepage": "https://github.com/avnersorek/OCFree",
   "bugs": {
-    "url": "https://github.com/AvnerSorek/opencode-free/issues"
+    "url": "https://github.com/avnersorek/OCFree/issues"
   },
   "engines": {
     "node": ">=22"

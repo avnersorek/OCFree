@@ -9,7 +9,7 @@ import type {
   DevTask,
   Job,
   ModelInfo,
-  OpenCodeFreeConfig,
+  OCFreeConfig,
   ResolvedConfig,
 } from "./types.js";
 
@@ -28,10 +28,10 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-export function resolveConfig(config: OpenCodeFreeConfig): ResolvedConfig {
+export function resolveConfig(config: OCFreeConfig): ResolvedConfig {
   return {
     opencodeBin: expandHome(config.opencodeBin ?? "~/.opencode/bin/opencode"),
-    dataDir: expandHome(config.dataDir ?? "~/.openclaw/state/opencode-free"),
+    dataDir: expandHome(config.dataDir ?? "~/.openclaw/state/ocfree"),
     defaultTimeoutSec: Math.round(
       clamp(config.defaultTimeoutSec ?? DEFAULT_TIMEOUT_SEC, 30, 1800),
     ),
@@ -51,9 +51,9 @@ export function randomId(prefix: string): string {
 }
 
 export async function ensureDataDir(
-  config: OpenCodeFreeConfig | ResolvedConfig,
+  config: OCFreeConfig | ResolvedConfig,
 ): Promise<string> {
-  const dataDir = expandHome(config.dataDir ?? "~/.openclaw/state/opencode-free");
+  const dataDir = expandHome(config.dataDir ?? "~/.openclaw/state/ocfree");
   await mkdir(dataDir, { recursive: true });
   await mkdir(join(dataDir, "jobs"), { recursive: true });
   await mkdir(join(dataDir, "benchmarks"), { recursive: true });
@@ -169,7 +169,7 @@ export async function listJobs(dataDir: string, limit = 10): Promise<Job[]> {
 export function spawnWorker(
   jobId: string,
   dataDir: string,
-  config: OpenCodeFreeConfig | ResolvedConfig,
+  config: OCFreeConfig | ResolvedConfig,
 ): number | undefined {
   const workerJsPath = fileURLToPath(new URL("./worker.js", import.meta.url));
   const child = spawn(process.execPath, [workerJsPath, jobId], {

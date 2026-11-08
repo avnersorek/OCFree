@@ -1,4 +1,4 @@
-# OpenCode Free
+# OCFree
 
 OpenClaw tool plugin for benchmarking the free models exposed by a local
 [OpenCode](https://opencode.ai) harness and for running repository development
@@ -24,7 +24,7 @@ npm run build
 openclaw plugins install "$PWD" --link --accept-capabilities
 ```
 
-Then enable the `opencode-free` plugin in your OpenClaw configuration and restart
+Then enable the `ocfree` plugin in your OpenClaw configuration and restart
 OpenClaw. Because the plugin is installed from a checkout, keep the `dist/`
 directory tracked; it is built output, not vendored dependencies.
 
@@ -33,7 +33,7 @@ directory tracked; it is built output, not vendored dependencies.
 | Key | Default | Notes |
 | --- | --- | --- |
 | `opencodeBin` | `~/.opencode/bin/opencode` | Local OpenCode harness binary. |
-| `dataDir` | `~/.openclaw/state/opencode-free` | Models, tasks, jobs, benchmarks, and online ratings. |
+| `dataDir` | `~/.openclaw/state/ocfree` | Models, tasks, jobs, benchmarks, and online ratings. |
 | `defaultTimeoutSec` | `300` | Per-run timeout, clamped 30..1800. |
 | `maxFallbackModels` | `3` | Models tried per task, clamped 1..5. |
 | `onlineRatingsUrl` | unset | Optional JSON ratings registry. When set, the plugin fetches this URL instead of scraping BenchLM. |

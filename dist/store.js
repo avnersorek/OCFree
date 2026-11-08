@@ -23,7 +23,7 @@ export function clamp(value, min, max) {
 export function resolveConfig(config) {
     return {
         opencodeBin: expandHome(config.opencodeBin ?? "~/.opencode/bin/opencode"),
-        dataDir: expandHome(config.dataDir ?? "~/.openclaw/state/opencode-free"),
+        dataDir: expandHome(config.dataDir ?? "~/.openclaw/state/ocfree"),
         defaultTimeoutSec: Math.round(clamp(config.defaultTimeoutSec ?? DEFAULT_TIMEOUT_SEC, 30, 1800)),
         maxFallbackModels: Math.round(clamp(config.maxFallbackModels ?? DEFAULT_MAX_FALLBACK, 1, 5)),
         allowedRepoRoots: (config.allowedRepoRoots && config.allowedRepoRoots.length > 0
@@ -35,7 +35,7 @@ export function randomId(prefix) {
     return `${prefix}-${randomUUID().slice(0, 8)}`;
 }
 export async function ensureDataDir(config) {
-    const dataDir = expandHome(config.dataDir ?? "~/.openclaw/state/opencode-free");
+    const dataDir = expandHome(config.dataDir ?? "~/.openclaw/state/ocfree");
     await mkdir(dataDir, { recursive: true });
     await mkdir(join(dataDir, "jobs"), { recursive: true });
     await mkdir(join(dataDir, "benchmarks"), { recursive: true });
