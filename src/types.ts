@@ -8,71 +8,11 @@ export interface ModelInfo {
   lastProbe?: { ok: boolean; latencyMs: number; error?: string; at: string };
 }
 
-export interface TaskRunResult {
-  taskId: string;
-  passed: boolean;
-  fraction: number;
-  checks: { name: string; ok: boolean; detail?: string }[];
-  tampered: boolean;
-}
-
-export interface BenchRun {
-  model: ModelId;
-  taskId: string;
-  run: number;
-  ok: boolean;
-  exitCode: number | null;
-  timedOut: boolean;
-  latencyMs: number;
-  ttfoMs: number | null;
-  attempts: number;
-  toolCalls: number;
-  cost: number;
-  tokens: { input: number; output: number; reasoning: number };
-  fraction: number;
-  tampered: boolean;
-  sessionId?: string;
-  checks: { name: string; ok: boolean; detail?: string }[];
-  error?: string;
-  at: string;
-}
-
 export interface ProbeResult {
   ok: boolean;
   latencyMs: number;
   error?: string;
   at: string;
-}
-
-export interface ModelRating {
-  model: ModelId;
-  available: boolean;
-  score: number;
-  passRate: number;
-  partialScore: number;
-  speedScore: number;
-  formatScore: number;
-  medianLatencyMs: number;
-  totalCost: number;
-  costVerified: boolean;
-  runs: number;
-  failures: number;
-}
-
-export interface BenchmarkRecord {
-  id: string;
-  scoringVersion: 1;
-  startedAt: string;
-  finishedAt?: string;
-  status: "running" | "done" | "failed";
-  taskIds: string[];
-  runsPerTask: number;
-  retries: number;
-  models: ModelId[];
-  probes: Record<ModelId, ProbeResult>;
-  ratings: ModelRating[];
-  runs: BenchRun[];
-  error?: string;
 }
 
 export interface DevTask {
@@ -101,7 +41,7 @@ export interface DevTask {
 
 export interface Job {
   id: string;
-  type: "bench" | "task";
+  type: "canary" | "task";
   status: "queued" | "running" | "done" | "failed" | "cancelled";
   createdAt: string;
   updatedAt: string;

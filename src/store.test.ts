@@ -30,7 +30,7 @@ async function makeDataDir(): Promise<string> {
 describe("job store", () => {
   it("creates, updates, reads, and lists jobs newest first", async () => {
     const dataDir = await makeDataDir();
-    const first = await createJob(dataDir, "bench", { taskIds: ["json-plan"] });
+    const first = await createJob(dataDir, "canary", {});
     await new Promise((resolve) => setTimeout(resolve, 5));
     const second = await createJob(dataDir, "task", { taskId: "task-x" });
 

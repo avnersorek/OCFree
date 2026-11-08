@@ -1,13 +1,12 @@
 # OCFree
 
-OpenClaw tool plugin for benchmarking the free models exposed by a local
-[OpenCode](https://opencode.ai) harness and for running repository development
-tasks with model fallback.
+OpenClaw tool plugin for discovering the free models exposed by a local
+[OpenCode](https://opencode.ai) harness, checking that they actually work, and
+running repository development tasks with an online-quality-ranked model chain.
 
-The plugin discovers free models from the local harness, benchmarks them against
-six deterministic coding tasks, ranks them with public online quality ratings plus
-local benchmark results, and uses the resulting quality-first chain to run
-development tasks in trusted repositories.
+Model quality comes from public online ratings. A small canary check proves a
+model can run a tool, write a file, and return the expected content; it is only an
+availability check, not a score.
 
 ## Requirements
 
@@ -24,16 +23,16 @@ npm run build
 openclaw plugins install "$PWD" --link --accept-capabilities
 ```
 
-Then enable the `ocfree` plugin in your OpenClaw configuration and restart
-OpenClaw. Because the plugin is installed from a checkout, keep the `dist/`
-directory tracked; it is built output, not vendored dependencies.
+Enable the `ocfree` plugin in your OpenClaw configuration and restart OpenClaw.
+Because the plugin is installed from a checkout, keep the `dist/` directory
+tracked; it is built output, not vendored dependencies.
 
 ## Configuration
 
 | Key | Default | Notes |
 | --- | --- | --- |
 | `opencodeBin` | `~/.opencode/bin/opencode` | Local OpenCode harness binary. |
-| `dataDir` | `~/.openclaw/state/ocfree` | Models, tasks, jobs, benchmarks, and online ratings. |
+| `dataDir` | `~/.openclaw/state/ocfree` | Models, canary results, tasks, jobs, and online ratings. |
 | `defaultTimeoutSec` | `300` | Per-run timeout, clamped 30..1800. |
 | `maxFallbackModels` | `3` | Models tried per task, clamped 1..5. |
 | `onlineRatingsUrl` | unset | Optional JSON ratings registry. When set, the plugin fetches this URL instead of scraping BenchLM. |
@@ -43,52 +42,37 @@ directory tracked; it is built output, not vendored dependencies.
 
 ### `ocfree_models`
 
-List free models discovered from the local harness. The cache refreshes after 24
-hours or when `refresh` is true. Includes online ratings when available.
+List free models from the local harness. The cache refreshes after 24 hours or
+when `refresh` is true. Each model includes its online rating and its last canary
+result when available.
 
 ```json
 {"refresh": true}
 ```
 
-### `ocfree_bench`
+### `ocfree_canary`
 
-Queue a background benchmark of free models against the deterministic task suite.
-Returns immediately with a job id.
-
-```json
-{"models": ["deepseek-v4.1-flash-free"], "tasks": ["json-plan"], "runs": 1}
-```
-
-The six benchmark tasks are:
-
-1. `fix-capitalize` — fix a string capitalization function so its tests pass.
-2. `balanced-brackets` — implement balanced bracket validation.
-3. `json-plan` — write an exact JSON document.
-4. `bash-cli` — create a shell script with exact output.
-5. `csv-parse` — implement an RFC4180-style CSV parser.
-6. `lru-cache` — implement an LRU cache.
-
-### `ocfree_report`
-
-Read the latest leaderboard, or a specific benchmark, including the per-task
-pass matrix, local ratings, online ratings, and the quality-first order.
+Queue a background canary check. The canary creates `probe.txt` with the exact
+content `ocfree-ok`, then verifies the file. It answers “is this model working?”
+and nothing about quality.
 
 ```json
-{"benchmarkId": "bench-20261105T213000000Z-abcd1234"}
+{"models": ["deepseek-v4.1-flash-free"]}
 ```
+
+Omit `models` to check every live free model. Results are stored in
+`canary.json` under the data directory.
 
 ### `ocfree_online`
 
-Show or refresh the public online quality ratings used for quality-first model
-selection. Use `action: "list"` for cached ratings or `action: "refresh"` to fetch
-again. A `url` parameter overrides the configured `onlineRatingsUrl` for one call.
+Show or refresh the public online quality ratings used for model selection.
 
 ```json
 {"action": "list"}
 ```
 
 ```json
-{"action": "refresh", "url": "https://example.com/ratings.json"}
+{"action": "refresh"}
 ```
 
 Without a custom `onlineRatingsUrl`, refresh fetches the BenchLM coding
@@ -112,9 +96,7 @@ A task with an `acceptance` command refuses to run unless you pass
 `confirm: true`. Tasks without an acceptance command run without confirmation.
 
 Use `resume: true` on the run action to reuse the last session for the chosen
-model. Use `ocfree_job` with `cancel: true` to stop a running or queued job; the
-plugin verifies the worker process command line before sending `SIGTERM` and
-refuses to kill an unverified process.
+model.
 
 ### `ocfree_job`
 
@@ -131,16 +113,19 @@ job after the worker process is verified.
 
 ## Model selection
 
-Selection is quality-first:
+Selection is quality-first and uses online ratings only:
 
 1. Models with online ratings come first, ordered by online score.
-2. Local benchmark results break ties among models with similar online quality.
-   `partialScore` is used before median latency.
+2. Ties use the source rank, then the model id.
 3. Unrated models follow all rated models.
 
-The local benchmark is useful as a tie-breaker and as a smoke test, but it is not
-a substitute for SWE-bench, Terminal-Bench, or other large standardized
-evaluations.
+A canary result never changes the quality order. It is used only to skip models
+that recently failed the availability check; if every candidate failed, the
+plugin still tries the full chain.
+
+The online registry is a snapshot plus refresh. It is not a substitute for
+running your own task on your own repository; review the model’s output and the
+diff.
 
 ## v1 and v2 harness arguments
 
@@ -154,36 +139,14 @@ On v2, OpenCode keeps session and state data in its XDG data directory (usually
 `$XDG_DATA_HOME/opencode` or `~/.local/share/opencode`). If you change
 `XDG_DATA_HOME` between runs, resume may not find the previous session.
 
-## Scoring
-
-Local benchmark ratings are on a 0..100 scale, rounded to one decimal:
-
-```text
-passRate    = passed runs / total runs
-partialScore = average per-run verifier fraction
-speedScore  = clamp(1 - (medianLatencyMs - 5000) / 55000, 0, 1)
-formatScore = runs without test-file tampering / total runs
-score       = round1(100 * (0.80*partialScore + 0.10*speedScore + 0.10*formatScore))
-```
-
-Ratings sort by score descending, then pass rate descending, then median latency
-ascending. Cost is verified from harness `step_finish` events: a benchmarked
-model only keeps its score when all observed runs report zero cost. If nonzero
-cost is observed, the score is forced to 0.
-
-Big Pickle's seeded online value comes from SWE Atlas Codebase QnA and uses a
-**different benchmark scale** from BenchLM coding scores. It is labelled
-separately and should not be compared directly with BenchLM numbers.
-
 ## Free-tier safety
 
-Free models are policy-gated and only run through the local harness
-(`~/.opencode/bin/opencode`). The plugin never calls the gateway HTTP route and
-never reads or stores credentials.
+Free models are policy-gated and only run through the local harness. The plugin
+never calls the gateway HTTP route and never reads or stores credentials.
 
-Benchmarks and tasks use OpenCode `--auto`, which can edit files and run commands
-without interactive confirmation. Optional acceptance commands run through
-`bash -lc` with the same privileges as your OpenClaw process.
+Canary checks and tasks use OpenCode `--auto`, which can edit files and run
+commands without interactive confirmation. Optional acceptance commands run
+through `bash -lc` with the same privileges as your OpenClaw process.
 
 - Restrict tasks to trusted repositories under `allowedRepoRoots`.
 - Review diffs and command output after every run.
@@ -204,5 +167,5 @@ opencode stats --days 1 --models
 ## License and attribution
 
 MIT License, copyright 2026 Avner Sorek. See [LICENSE](LICENSE) and
-[ATTRIBUTIONS.md](ATTRIBUTIONS.md) for design references. Internal design notes
-live in [docs/design.md](docs/design.md) and may lag the implementation.
+[ATTRIBUTIONS.md](ATTRIBUTIONS.md). Internal design notes live in
+[docs/design.md](docs/design.md) and may lag the implementation.

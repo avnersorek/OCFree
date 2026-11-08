@@ -1,4 +1,4 @@
-import type { ModelId, ModelRating } from "./types.js";
+import type { ModelId } from "./types.js";
 export interface OnlineRating {
     score: number;
     source: string;
@@ -17,10 +17,10 @@ export declare function loadOnlineRatings(dataDir: string): Promise<OnlineRating
 export declare function saveOnlineRatings(dataDir: string, ratings: OnlineRatings): Promise<void>;
 export declare function onlineRatingFor(model: ModelId, ratings: OnlineRatings): OnlineRating | undefined;
 /**
- * Quality-first ordering. Rated models always precede unrated ones; local
- * pass rate and latency are only tie-breakers inside the same quality band.
+ * Quality-first ordering. Rated models always precede unrated ones. Online
+ * score and rank are the only quality signals; speed is not a ranking input.
  */
-export declare function rankModelsByOnline(models: ModelId[], online: OnlineRatings, localRatings?: ModelRating[]): ModelId[];
+export declare function rankModelsByOnline(models: ModelId[], online: OnlineRatings): ModelId[];
 export declare function parseBenchlmRows(html: string): OnlineRatings["models"];
 export declare function refreshOnlineRatings(options: {
     dataDir: string;

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseBenchlmRows, rankModelsByOnline } from "./online.js";
 import type { OnlineRating, OnlineRatings } from "./online.js";
-import type { ModelRating } from "./types.js";
 
 function ratings(
   models: Record<string, OnlineRating>,
@@ -19,27 +18,6 @@ function onlineRating(score: number, rank?: number): OnlineRating {
     source: "test",
     updatedAt: "2026-11-08T00:00:00.000Z",
     ...(rank !== undefined ? { rank } : {}),
-  };
-}
-
-function localRating(
-  model: string,
-  partialScore: number,
-  medianLatencyMs: number,
-): ModelRating {
-  return {
-    model,
-    available: true,
-    score: 0,
-    passRate: 0,
-    partialScore,
-    speedScore: 0,
-    formatScore: 0,
-    medianLatencyMs,
-    totalCost: 0,
-    costVerified: true,
-    runs: 1,
-    failures: 0,
   };
 }
 
@@ -62,38 +40,6 @@ describe("rankModelsByOnline", () => {
       }),
     );
     expect(ranked).toEqual(["high", "middle", "low"]);
-  });
-
-  it("uses local partialScore before latency as a tie-breaker", () => {
-    const online = ratings({
-      fast: onlineRating(80),
-      accurate: onlineRating(80),
-    });
-    const ranked = rankModelsByOnline(
-      ["fast", "accurate"],
-      online,
-      [
-        localRating("fast", 0.4, 1_000),
-        localRating("accurate", 0.9, 20_000),
-      ],
-    );
-    expect(ranked).toEqual(["accurate", "fast"]);
-  });
-
-  it("uses latency when local partialScore is tied", () => {
-    const online = ratings({
-      slow: onlineRating(80),
-      quick: onlineRating(80),
-    });
-    const ranked = rankModelsByOnline(
-      ["slow", "quick"],
-      online,
-      [
-        localRating("slow", 0.7, 30_000),
-        localRating("quick", 0.7, 2_000),
-      ],
-    );
-    expect(ranked).toEqual(["quick", "slow"]);
   });
 });
 

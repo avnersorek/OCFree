@@ -1,4 +1,4 @@
-import { runBenchmark } from "./bench.js";
+import { runCanary } from "./canary.js";
 import { getTask, runDevTask } from "./tasks.js";
 import { getJob, resolveConfig, updateJob } from "./store.js";
 function parseConfig(raw) {
@@ -42,29 +42,24 @@ async function main() {
     const job = await getJob(dataDir, jobId);
     if (!job)
         throw new Error(`job not found: ${jobId}`);
-    if (job.type === "bench") {
+    if (job.type === "canary") {
         const models = stringArray(job.params.models);
-        const taskIds = stringArray(job.params.taskIds);
-        const runsPerTask = numberOrUndefined(job.params.runsPerTask);
         const timeoutSec = numberOrUndefined(job.params.timeoutSec);
-        const benchConfig = {
+        const canaryConfig = {
             ...config,
             ...(timeoutSec !== undefined ? { defaultTimeoutSec: timeoutSec } : {}),
         };
         let progressWrite = Promise.resolve();
-        const record = await runBenchmark({
+        const record = await runCanary({
             dataDir,
-            config: benchConfig,
+            config: canaryConfig,
             ...(models !== undefined ? { models } : {}),
-            ...(taskIds !== undefined ? { taskIds } : {}),
-            ...(runsPerTask !== undefined ? { runsPerTask } : {}),
             onProgress: (done, total, label) => {
                 progressWrite = progressWrite.then(() => updateJob(dataDir, jobId, { progress: { done, total, label } }).then(() => undefined)).catch(() => undefined);
             },
         });
         await progressWrite;
-        const result = { benchmarkId: record.id, ratings: record.ratings };
-        await updateJob(dataDir, jobId, { status: "done", result });
+        await updateJob(dataDir, jobId, { status: "done", result: record });
         process.exitCode = 0;
         return;
     }

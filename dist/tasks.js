@@ -4,7 +4,7 @@ import { open, realpath, stat, unlink } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join, parse as parsePath, resolve as resolvePath, sep, } from "node:path";
 import { ensureDataDir, randomId, readModels, readTasks, resolveConfig, saveTasks, } from "./store.js";
-import { getBestBenchmark } from "./bench.js";
+import { loadCanary } from "./canary.js";
 import { loadOnlineRatings, rankModelsByOnline } from "./online.js";
 import { isFreeModel, listFreeModels, normalizeModel, resolveBin, runOpencode, } from "./opencode.js";
 function isInsideRoot(repo, root) {
@@ -158,14 +158,6 @@ export async function pickModelChain(options) {
         .filter((model) => isFreeModel(model));
     for (const id of explicit)
         add(id);
-    const latest = await getBestBenchmark(options.dataDir);
-    if (latest) {
-        for (const rating of latest.ratings) {
-            if (rating.available === false)
-                continue;
-            add(rating.model);
-        }
-    }
     const cached = await readModels(options.dataDir);
     for (const model of cached) {
         if (model.free)
@@ -177,7 +169,12 @@ export async function pickModelChain(options) {
             add(model.id);
     }
     const online = await loadOnlineRatings(options.dataDir);
-    const ranked = rankModelsByOnline(candidates, online, latest?.ratings ?? []);
+    const canary = await loadCanary(options.dataDir);
+    const failed = new Set(Object.entries(canary?.models ?? {})
+        .filter(([, probe]) => !probe.ok)
+        .map(([model]) => model));
+    const eligible = candidates.filter((model) => !failed.has(model));
+    const ranked = rankModelsByOnline(eligible.length > 0 ? eligible : candidates, online);
     if (explicit.length === 0)
         return ranked.slice(0, limit);
     const explicitSet = new Set(explicit);

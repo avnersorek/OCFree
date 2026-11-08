@@ -1,7 +1,7 @@
 {
   "id": "ocfree",
   "name": "OCFree",
-  "description": "Benchmark free OpenCode models and run repo development tasks with fallback.",
+  "description": "Discover free OpenCode models, canary-check them, and run repo development tasks with online quality ratings.",
   "version": "0.1.0",
   "configSchema": {
     "type": "object",
@@ -12,7 +12,7 @@
       },
       "dataDir": {
         "type": "string",
-        "description": "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/ocfree."
+        "description": "Directory for state, jobs, tasks, canary results, and online ratings. Defaults to ~/.openclaw/state/ocfree."
       },
       "defaultTimeoutSec": {
         "type": "number",
@@ -41,8 +41,7 @@
   "contracts": {
     "tools": [
       "ocfree_models",
-      "ocfree_bench",
-      "ocfree_report",
+      "ocfree_canary",
       "ocfree_online",
       "ocfree_tasks",
       "ocfree_job"

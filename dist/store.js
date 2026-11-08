@@ -38,7 +38,6 @@ export async function ensureDataDir(config) {
     const dataDir = expandHome(config.dataDir ?? "~/.openclaw/state/ocfree");
     await mkdir(dataDir, { recursive: true });
     await mkdir(join(dataDir, "jobs"), { recursive: true });
-    await mkdir(join(dataDir, "benchmarks"), { recursive: true });
     await ensureJsonFile(join(dataDir, "models.json"), []);
     await ensureJsonFile(join(dataDir, "tasks.json"), []);
     return dataDir;

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "Benchmark free OpenCode models and run repository development tasks with fallback.",
+  "description": "Discover free OpenCode models, canary-check them, and run repository development tasks with online quality ratings.",
   "license": "MIT",
   "author": "Avner Sorek",
   "repository": {
@@ -20,7 +20,6 @@
   "keywords": [
     "openclaw",
     "opencode",
-    "benchmark",
     "free-models",
     "coding-agent"
   ],

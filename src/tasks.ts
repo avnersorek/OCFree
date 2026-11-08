@@ -17,7 +17,7 @@ import {
   resolveConfig,
   saveTasks,
 } from "./store.js";
-import { getBestBenchmark } from "./bench.js";
+import { loadCanary } from "./canary.js";
 import { loadOnlineRatings, rankModelsByOnline } from "./online.js";
 import {
   isFreeModel,
@@ -219,14 +219,6 @@ export async function pickModelChain(
     .filter((model) => isFreeModel(model));
   for (const id of explicit) add(id);
 
-  const latest = await getBestBenchmark(options.dataDir);
-  if (latest) {
-    for (const rating of latest.ratings) {
-      if (rating.available === false) continue;
-      add(rating.model);
-    }
-  }
-
   const cached = await readModels(options.dataDir);
   for (const model of cached) {
     if (model.free) add(model.id);
@@ -238,10 +230,16 @@ export async function pickModelChain(
   }
 
   const online = await loadOnlineRatings(options.dataDir);
+  const canary = await loadCanary(options.dataDir);
+  const failed = new Set(
+    Object.entries(canary?.models ?? {})
+      .filter(([, probe]) => !probe.ok)
+      .map(([model]) => model),
+  );
+  const eligible = candidates.filter((model) => !failed.has(model));
   const ranked = rankModelsByOnline(
-    candidates,
+    eligible.length > 0 ? eligible : candidates,
     online,
-    latest?.ratings ?? [],
   );
   if (explicit.length === 0) return ranked.slice(0, limit);
   const explicitSet = new Set(explicit);

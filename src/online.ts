@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { ModelId, ModelRating } from "./types.js";
+import type { ModelId } from "./types.js";
 import { writeJsonAtomic } from "./store.js";
 
 export interface OnlineRating {
@@ -164,15 +164,13 @@ export function onlineRatingFor(
 }
 
 /**
- * Quality-first ordering. Rated models always precede unrated ones; local
- * pass rate and latency are only tie-breakers inside the same quality band.
+ * Quality-first ordering. Rated models always precede unrated ones. Online
+ * score and rank are the only quality signals; speed is not a ranking input.
  */
 export function rankModelsByOnline(
   models: ModelId[],
   online: OnlineRatings,
-  localRatings: ModelRating[] = [],
 ): ModelId[] {
-  const local = new Map(localRatings.map((rating) => [rating.model, rating]));
   return [...new Set(models)].sort((a, b) => {
     const oa = online.models[a];
     const ob = online.models[b];
@@ -182,15 +180,7 @@ export function rankModelsByOnline(
     if (oa && ob && (oa.rank ?? Infinity) !== (ob.rank ?? Infinity)) {
       return (oa.rank ?? Infinity) - (ob.rank ?? Infinity);
     }
-    const la = local.get(a);
-    const lb = local.get(b);
-    const pa = la?.partialScore ?? 0;
-    const pb = lb?.partialScore ?? 0;
-    if (pb !== pa) return pb - pa;
-    return (
-      (la?.medianLatencyMs ?? Number.POSITIVE_INFINITY) -
-      (lb?.medianLatencyMs ?? Number.POSITIVE_INFINITY)
-    );
+    return a.localeCompare(b);
   });
 }
 

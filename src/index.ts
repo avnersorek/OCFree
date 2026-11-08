@@ -12,18 +12,12 @@ import {
   updateJob,
 } from "./store.js";
 import { isFreeModel, listFreeModels, normalizeModel } from "./opencode.js";
-import {
-  BENCH_TASKS,
-  getBenchmark,
-  getBestBenchmark,
-  getLatestBenchmark,
-} from "./bench.js";
+import { loadCanary } from "./canary.js";
 import { addTask, getTask, listTasks } from "./tasks.js";
-import type { BenchmarkRecord, ModelInfo, ModelRating } from "./types.js";
+import type { ModelInfo } from "./types.js";
 import {
   loadOnlineRatings,
   onlineRatingFor,
-  rankModelsByOnline,
   refreshOnlineRatings,
 } from "./online.js";
 
@@ -37,7 +31,7 @@ const ConfigSchema = Type.Object({
   dataDir: Type.Optional(
     Type.String({
       description:
-        "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/ocfree.",
+        "Directory for state, jobs, tasks, canary results, and online ratings. Defaults to ~/.openclaw/state/ocfree.",
     }),
   ),
   defaultTimeoutSec: Type.Optional(
@@ -86,17 +80,6 @@ function cacheIsFresh(models: ModelInfo[]): boolean {
   return Date.now() - timestamp < CACHE_MAX_AGE_MS;
 }
 
-function withRatings(
-  models: ModelInfo[],
-  ratings: ModelRating[],
-): (ModelInfo & { rating?: ModelRating })[] {
-  const byModel = new Map(ratings.map((rating) => [rating.model, rating]));
-  return models.map((model) => {
-    const rating = byModel.get(model.id);
-    return { ...model, ...(rating ? { rating } : {}) };
-  });
-}
-
 async function isWorkerForJob(pid: number, jobId: string): Promise<boolean> {
   try {
     const cmdline = await readFile(`/proc/${pid}/cmdline`, "utf8");
@@ -115,35 +98,11 @@ function uniqueFreeModels(models: string[]): string[] {
   return normalized;
 }
 
-function passMatrix(benchmark: BenchmarkRecord): {
-  model: string;
-  tasks: Record<string, { passed: number; runs: number; passRate: number }>;
-}[] {
-  return benchmark.models.map((model) => {
-    const tasks: Record<
-      string,
-      { passed: number; runs: number; passRate: number }
-    > = {};
-    for (const taskId of benchmark.taskIds) {
-      const runs = benchmark.runs.filter(
-        (run) => run.model === model && run.taskId === taskId,
-      );
-      const passed = runs.filter((run) => run.ok).length;
-      tasks[taskId] = {
-        passed,
-        runs: runs.length,
-        passRate: runs.length > 0 ? passed / runs.length : 0,
-      };
-    }
-    return { model, tasks };
-  });
-}
-
 export default defineToolPlugin({
   id: "ocfree",
   name: "OCFree",
   description:
-    "Benchmark free OpenCode models and run repo development tasks with fallback.",
+    "Discover free OpenCode models, canary-check them, and run repo development tasks with online quality ratings.",
   configSchema: ConfigSchema,
   tools: (tool) => [
     tool({
@@ -162,109 +121,55 @@ export default defineToolPlugin({
         if (refresh === true || !cacheIsFresh(models)) {
           models = await listFreeModels(resolved);
         }
-        const latest = await getBestBenchmark(dataDir);
         const online = await loadOnlineRatings(dataDir);
-        const rated = withRatings(models, latest?.ratings ?? []);
+        const canary = await loadCanary(dataDir);
         return {
-          models: rated.map((model) => ({
+          models: models.map((model) => ({
             ...model,
             online: onlineRatingFor(model.id, online) ?? null,
+            canary: canary?.models[model.id] ?? null,
           })),
           refreshedAt: newestIso(models),
           onlineSource: online.source,
           onlineUpdatedAt: online.updatedAt,
+          canaryUpdatedAt: canary?.updatedAt ?? null,
         };
       },
     }),
 
     tool({
-      name: "ocfree_bench",
+      name: "ocfree_canary",
       description:
-        "Start a background benchmark of free OpenCode models against the deterministic task suite.",
+        "Queue a canary check that proves each free model can run a tool, write a file, and return the expected content.",
       parameters: Type.Object({
         models: Type.Optional(
           Type.Array(Type.String(), {
-            description: "Free model ids to benchmark. Defaults to all live free models.",
+            description: "Free model ids to check. Defaults to all live free models.",
           }),
-        ),
-        tasks: Type.Optional(
-          Type.Array(Type.String(), {
-            description:
-              "Benchmark task ids. Defaults to all six tasks: fix-capitalize, balanced-brackets, json-plan, bash-cli, csv-parse, lru-cache.",
-          }),
-        ),
-        runs: Type.Optional(
-          Type.Number({ description: "Runs per task. Defaults to 1." }),
         ),
         timeoutSec: Type.Optional(
           Type.Number({
-            description: "Per-run timeout in seconds. Defaults to the plugin timeout.",
+            description: "Per-model canary timeout in seconds. Defaults to the plugin timeout.",
           }),
         ),
       }),
-      execute: async ({ models, tasks, runs, timeoutSec }, config) => {
+      execute: async ({ models, timeoutSec }, config) => {
         const resolved = resolveConfig(config);
         const dataDir = await ensureDataDir(resolved);
-        const knownTasks = new Set(BENCH_TASKS.map((task) => task.id));
-        if (tasks) {
-          const unknown = tasks.filter((taskId) => !knownTasks.has(taskId));
-          if (unknown.length > 0) {
-            throw new Error(`Unknown benchmark tasks: ${unknown.join(", ")}`);
-          }
-        }
-        const params: Record<string, unknown> = {
-          taskIds: tasks ?? [...knownTasks],
-          runsPerTask: Math.min(5, Math.max(1, Math.round(runs ?? 1))),
-          timeoutSec: timeoutSec ?? resolved.defaultTimeoutSec,
-        };
+        const params: Record<string, unknown> = {};
         if (models !== undefined) params.models = uniqueFreeModels(models);
-        const job = await createJob(dataDir, "bench", params);
+        if (timeoutSec !== undefined) {
+          params.timeoutSec = Math.min(
+            1800,
+            Math.max(10, Math.round(timeoutSec)),
+          );
+        }
+        const job = await createJob(dataDir, "canary", params);
         const pid = spawnWorker(job.id, dataDir, resolved);
         if (pid) await updateJob(dataDir, job.id, { workerPid: pid });
         return {
           jobId: job.id,
-          message: `Benchmark queued as ${job.id}. Check progress with ocfree_job.`,
-        };
-      },
-    }),
-
-    tool({
-      name: "ocfree_report",
-      description:
-        "Show the latest benchmark leaderboard, per-task pass matrix, and scoring version.",
-      parameters: Type.Object({
-        benchmarkId: Type.Optional(
-          Type.String({ description: "Specific benchmark id. Defaults to latest." }),
-        ),
-      }),
-      execute: async ({ benchmarkId }, config) => {
-        const resolved = resolveConfig(config);
-        const dataDir = await ensureDataDir(resolved);
-        const benchmark = benchmarkId
-          ? await getBenchmark(dataDir, benchmarkId)
-          : await getLatestBenchmark(dataDir);
-        if (!benchmark) return { found: false };
-        const online = await loadOnlineRatings(dataDir);
-        return {
-          found: true,
-          benchmarkId: benchmark.id,
-          scoringVersion: benchmark.scoringVersion,
-          status: benchmark.status,
-          startedAt: benchmark.startedAt,
-          finishedAt: benchmark.finishedAt,
-          models: benchmark.models,
-          taskIds: benchmark.taskIds,
-          ratings: benchmark.ratings,
-          qualityOrder: rankModelsByOnline(
-            benchmark.models,
-            online,
-            benchmark.ratings,
-          ),
-          online: benchmark.models.map((model) => ({
-            model,
-            rating: onlineRatingFor(model, online) ?? null,
-          })),
-          passMatrix: passMatrix(benchmark),
+          message: `Canary queued as ${job.id}. Check progress with ocfree_job.`,
         };
       },
     }),
