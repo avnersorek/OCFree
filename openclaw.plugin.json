@@ -1,0 +1,51 @@
+{
+  "id": "opencode-free",
+  "name": "OpenCode Free",
+  "description": "Benchmark free OpenCode models and run repo development tasks with fallback.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "opencodeBin": {
+        "type": "string",
+        "description": "Path to the local OpenCode harness binary. Defaults to ~/.opencode/bin/opencode."
+      },
+      "dataDir": {
+        "type": "string",
+        "description": "Directory for state, jobs, tasks, and benchmarks. Defaults to ~/.openclaw/state/opencode-free."
+      },
+      "defaultTimeoutSec": {
+        "type": "number",
+        "description": "Default per-run timeout in seconds (clamped 30..1800). Defaults to 300."
+      },
+      "maxFallbackModels": {
+        "type": "number",
+        "description": "Maximum models to try per dev task (clamped 1..5). Defaults to 3."
+      },
+      "onlineRatingsUrl": {
+        "type": "string",
+        "description": "Optional JSON URL for an online ratings registry. Defaults to BenchLM coding + SWE Atlas seed."
+      },
+      "allowedRepoRoots": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Directories that may contain task repositories. Repositories are resolved through fs.realpath and must stay inside one of these roots. Defaults to [\"~/.openclaw/workspace\"]."
+      }
+    }
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "tools": [
+      "ocfree_models",
+      "ocfree_bench",
+      "ocfree_report",
+      "ocfree_online",
+      "ocfree_tasks",
+      "ocfree_job"
+    ]
+  }
+}
