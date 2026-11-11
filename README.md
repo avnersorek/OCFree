@@ -27,6 +27,79 @@ Enable the `ocfree` plugin in your OpenClaw configuration and restart OpenClaw.
 Because the plugin is installed from a checkout, keep the `dist/` directory
 tracked; it is built output, not vendored dependencies.
 
+## Quick example
+
+These examples use the tool JSON directly. In an OpenClaw chat you can ask for
+the same steps in natural language.
+
+### 1. Discover free models
+
+```json
+{"refresh": true}
+```
+
+This returns the live free-model roster with online ratings and the latest
+canary result for each model.
+
+### 2. Check that a model actually works
+
+```json
+{"models": ["deepseek-v4.1-flash-free"]}
+```
+
+The call returns a background `jobId`. Poll it with:
+
+```json
+{"jobId": "job-abc123"}
+```
+
+The result verifies that the model created `probe.txt` with the expected
+content. This is an availability check only; it does not affect the online
+quality order.
+
+### 3. Add a task
+
+```json
+{
+  "action": "add",
+  "title": "Fix failing tests",
+  "repo": "/home/me/src/my-project",
+  "prompt": "Run npm test and fix the failures without modifying test files.",
+  "acceptance": "npm test"
+}
+```
+
+The repository must be inside `allowedRepoRoots`. The call returns a `taskId`.
+
+### 4. Run it with the quality-first model chain
+
+```json
+{"action": "run", "taskId": "task-abc123", "confirm": true}
+```
+
+`confirm` is required because this task has an acceptance command. The call
+returns a `jobId`; poll it with `ocfree_job`.
+
+To continue the last session for the selected model:
+
+```json
+{
+  "action": "run",
+  "taskId": "task-abc123",
+  "resume": true,
+  "confirm": true
+}
+```
+
+### 5. Refresh online ratings when needed
+
+```json
+{"action": "refresh"}
+```
+
+This updates the rating registry used for model selection. It does not run any
+coding task.
+
 ## Configuration
 
 | Key | Default | Notes |
